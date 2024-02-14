@@ -6,7 +6,7 @@ namespace Engine.Actions
     {
         private readonly int _maximumDamage;
         private readonly int _minimumDamage;
-        public AttackWithWeapon(GameItem itemInUse, int maximumDamage, int minimumDamage)
+        public AttackWithWeapon(GameItem itemInUse, int minimumDamage, int maximumDamage)
             :base(itemInUse)
         {
             if (itemInUse.Category != GameItem.ItemCategory.Weapon)
@@ -21,8 +21,8 @@ namespace Engine.Actions
             {
                 throw new ArgumentException("maximumDamage must be >= minimumDamage");
             }
-            _maximumDamage = maximumDamage;
             _minimumDamage = minimumDamage;
+            _maximumDamage = maximumDamage;
         }
         public void Execute(LivingEntity actor, LivingEntity target)
         {
