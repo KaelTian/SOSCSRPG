@@ -1,17 +1,21 @@
 ﻿using Engine.EventArgs;
 using Engine.Factories;
 using Engine.Models;
+using Engine.Services;
+using Newtonsoft.Json;
 
 namespace Engine.ViewModels
 {
     public class GameSession : BaseNotificationClass
     {
-        public event EventHandler<GameMessageEventArgs> OnMessageRaised;
+        private readonly MessageBroker _messageBroker = MessageBroker.GetInstance();
+        private Battle _currentBattle;
         #region Properties
         private Player _currentPlayer;
         private Location _currentLocation;
         private Monster _currentMonster;
         private Trader _currentTrader;
+        public string Version { get; } = "0.1.000";
         public Player CurrentPlayer
         {
             get { return _currentPlayer; }
@@ -19,16 +23,14 @@ namespace Engine.ViewModels
             {
                 if (_currentPlayer != null)
                 {
-                    _currentPlayer.OnActionPerformed -= OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLevelUp -= OnCurrentPlayerLevelUp;
-                    _currentPlayer.OnKilled -= OnCurrentPlayerKilled;
+                    _currentPlayer.OnKilled -= OnPlayerKilled;
                 }
                 _currentPlayer = value;
                 if (_currentPlayer != null)
                 {
-                    _currentPlayer.OnActionPerformed += OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLevelUp += OnCurrentPlayerLevelUp;
-                    _currentPlayer.OnKilled += OnCurrentPlayerKilled;
+                    _currentPlayer.OnKilled += OnPlayerKilled;
                 }
             }
         }
@@ -46,10 +48,11 @@ namespace Engine.ViewModels
                 OnPropertyChanged(nameof(HasLocationToWest));
                 CompleteQuestsAtLocation();
                 GivePlayerQuestsAtLocation();
-                GetMonsterAtLocation();
+                CurrentMonster = CurrentLocation.GetMonster();
                 CurrentTrader = CurrentLocation.TraderHere;
             }
         }
+        [JsonIgnore]
         public Trader CurrentTrader
         {
             get { return _currentTrader; }
@@ -61,54 +64,65 @@ namespace Engine.ViewModels
                 OnPropertyChanged(nameof(HasTrader));
             }
         }
-
+        [JsonIgnore]
         public bool HasLocationToNorth => MoveNorthOnStep() != null;
-
+        [JsonIgnore]
         public bool HasLocationToEast => MoveEastOnStep() != null;
-
+        [JsonIgnore]
         public bool HasLocationToSouth => MoveSouthOnStep() != null;
-
+        [JsonIgnore]
         public bool HasLocationToWest => MoveWestOnStep() != null;
-
+        [JsonIgnore]
         public World CurrentWorld { get; }
-
+        [JsonIgnore]
         public Monster CurrentMonster
         {
             get { return _currentMonster; }
             set
             {
-                if (_currentMonster != null)
+                if (_currentBattle != null)
                 {
-                    _currentMonster.OnActionPerformed -= OnCurrentMonsterPerformedAction;
-                    _currentMonster.OnKilled -= OnCurrentMonsterKilled;
+                    _currentBattle.OnCombatVictory -= OnCurrentMonsterKilled;
+                    _currentBattle.Dispose();
+                    _currentBattle = null;
                 }
                 _currentMonster = value;
                 if (_currentMonster != null)
                 {
-                    _currentMonster.OnActionPerformed += OnCurrentMonsterPerformedAction;
-                    _currentMonster.OnKilled += OnCurrentMonsterKilled;
-                    RaiseMessage("");
-                    RaiseMessage($"You see a {CurrentMonster.Name} here!");
+                    _currentBattle = new Battle(CurrentPlayer, CurrentMonster);
+                    _currentBattle.OnCombatVictory += OnCurrentMonsterKilled;
                 }
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasMonster));
             }
         }
+        [JsonIgnore]
         public bool HasMonster => CurrentMonster != null;
+        [JsonIgnore]
         public bool HasTrader => CurrentTrader != null;
         #endregion
 
         public GameSession()
         {
-            CurrentPlayer = new Player("Scott", "Fighter", 0, 10, 10, 1000000);
-            if (!CurrentPlayer.Weapons.Any())
+            CurrentWorld = WorldFactory.CreateWorld();
+            int dexterity = DiceService.Instance.Roll(6, 3).Value;
+            CurrentPlayer = new Player("Scott", "Fighter", 0, 10, 10, dexterity, 1000000);
+            if (!CurrentPlayer.Inventory.Weapons.Any())
             {
                 CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(1001));
             }
             CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(2001));
             CurrentPlayer.LearnRecipe(RecipeFactory.RecipeByID(1));
-            CurrentWorld = WorldFactory.CreateWorld();
+            CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(3001));
+            CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(3002));
+            CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(3003));
             CurrentLocation = CurrentWorld.LocationAt(0, 0);
+        }
+        public GameSession(Player player, int xCoordinate, int yCoordinate)
+        {
+            CurrentWorld = WorldFactory.CreateWorld();
+            CurrentPlayer = player;
+            CurrentLocation = CurrentWorld.LocationAt(xCoordinate, yCoordinate);
         }
 
         public void MoveNorth()
@@ -161,22 +175,22 @@ namespace Engine.ViewModels
                             !q.IsCompleted);
                 if (questToComplete != null)
                 {
-                    if (CurrentPlayer.HasAllTheseItems(quest.ItemsToComplete))
+                    if (CurrentPlayer.Inventory.HasAllTheseItems(quest.ItemsToComplete))
                     {
                         // Remove the quest completion items from the player's inventory
                         CurrentPlayer.RemoveItemsFromInventory(quest.ItemsToComplete);
-                        RaiseMessage("");
-                        RaiseMessage($"You completed the '{quest.Name}' quest");
+                        _messageBroker.RaiseMessage("");
+                        _messageBroker.RaiseMessage($"You completed the '{quest.Name}' quest");
                         // Give the player the quest rewards
-                        RaiseMessage($"You receive {quest.RewardExperiencePoints} experience points");
+                        _messageBroker.RaiseMessage($"You receive {quest.RewardExperiencePoints} experience points");
                         CurrentPlayer.AddExperience(quest.RewardExperiencePoints);
-                        RaiseMessage($"You receive {quest.RewardGold} gold");
+                        _messageBroker.RaiseMessage($"You receive {quest.RewardGold} gold");
                         CurrentPlayer.ReceiveGold(quest.RewardGold);
                         foreach (ItemQuantity itemQuantity in quest.RewardItems)
                         {
                             GameItem rewardItem = ItemFactory.CreateGameItem(itemQuantity.ItemID);
                             CurrentPlayer.AddItemToInventory(rewardItem);
-                            RaiseMessage($"You receive a {rewardItem.Name}");
+                            _messageBroker.RaiseMessage($"You receive a {rewardItem.Name}");
                         }
                         // Mark the Quest as completed
                         questToComplete.IsCompleted = true;
@@ -186,7 +200,7 @@ namespace Engine.ViewModels
         }
         public void CraftItemUsing(Recipe recipe)
         {
-            if (CurrentPlayer.HasAllTheseItems(recipe.Ingredients))
+            if (CurrentPlayer.Inventory.HasAllTheseItems(recipe.Ingredients))
             {
                 CurrentPlayer.RemoveItemsFromInventory(recipe.Ingredients);
                 foreach (ItemQuantity itemQuantity in recipe.OutputItems)
@@ -195,16 +209,16 @@ namespace Engine.ViewModels
                     {
                         GameItem outputItem = ItemFactory.CreateGameItem(itemQuantity.ItemID);
                         CurrentPlayer.AddItemToInventory(outputItem);
-                        RaiseMessage($"You craft 1 {outputItem.Name}");
+                        _messageBroker.RaiseMessage($"You craft 1 {outputItem.Name}");
                     }
                 }
             }
             else
             {
-                RaiseMessage("You do not have the required ingredients:");
+                _messageBroker.RaiseMessage("You do not have the required ingredients:");
                 foreach (ItemQuantity itemQuantity in recipe.Ingredients)
                 {
-                    RaiseMessage($"  {itemQuantity.Quantity} {ItemFactory.ItemName(itemQuantity.ItemID)}");
+                    _messageBroker.RaiseMessage($"  {itemQuantity.Quantity} {ItemFactory.ItemName(itemQuantity.ItemID)}");
                 }
             }
         }
@@ -215,104 +229,71 @@ namespace Engine.ViewModels
                 if (!CurrentPlayer.Quests.Any(q => q.PlayerQuest.ID == quest.ID))
                 {
                     CurrentPlayer.Quests.Add(new QuestStatus(quest));
-                    RaiseMessage("");
-                    RaiseMessage($"You receive the '{quest.Name}' quest");
-                    RaiseMessage(quest.Description);
-                    RaiseMessage("Return with:");
+                    _messageBroker.RaiseMessage("");
+                    _messageBroker.RaiseMessage($"You receive the '{quest.Name}' quest");
+                    _messageBroker.RaiseMessage(quest.Description);
+                    _messageBroker.RaiseMessage("Return with:");
                     foreach (ItemQuantity itemQuantity in quest.ItemsToComplete)
                     {
-                        RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
+                        _messageBroker.RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
                     }
-                    RaiseMessage("And you will receive:");
-                    RaiseMessage($"   {quest.RewardExperiencePoints} experience points");
-                    RaiseMessage($"   {quest.RewardGold} gold");
+                    _messageBroker.RaiseMessage("And you will receive:");
+                    _messageBroker.RaiseMessage($"   {quest.RewardExperiencePoints} experience points");
+                    _messageBroker.RaiseMessage($"   {quest.RewardGold} gold");
                     foreach (ItemQuantity itemQuantity in quest.RewardItems)
                     {
-                        RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
+                        _messageBroker.RaiseMessage($"   {itemQuantity.Quantity} {ItemFactory.CreateGameItem(itemQuantity.ItemID).Name}");
                     }
                 }
             }
         }
 
-        private void GetMonsterAtLocation()
-        {
-            CurrentMonster = CurrentLocation.GetMonster();
-        }
-
-        private void RaiseMessage(string message)
-        {
-            OnMessageRaised?.Invoke(this, new GameMessageEventArgs(message));
-        }
-
         public void AttackCurrentMonster()
         {
-            if (CurrentMonster == null) return;
-            if (CurrentPlayer.CurrentWeapon == null)
-            {
-                RaiseMessage("You must select a weapon,to attack.");
-                return;
-            }
-            CurrentPlayer.UseCurrentWeaponOn(CurrentMonster);
-            // If monster is killed,collect rewards and loot
-            if (CurrentMonster.IsDead)
-            {
-                // Get another monster to fight
-                GetMonsterAtLocation();
-            }
-            else
-            {
-                // Let the monster attack
-                CurrentMonster.UseCurrentWeaponOn(CurrentPlayer);
-            }
+            _currentBattle?.AttackOpponent();
         }
 
-        private void OnCurrentPlayerKilled(Object sender, System.EventArgs eventArgs)
+        private void OnPlayerKilled(Object sender, System.EventArgs eventArgs)
         {
-            RaiseMessage("");
+            _messageBroker.RaiseMessage("");
             var killedMessage = CurrentMonster != null ?
                 $"The {CurrentMonster.Name} killed you." :
                 "You have been killed.";
-            RaiseMessage(killedMessage);
+            _messageBroker.RaiseMessage(killedMessage);
             CurrentLocation = CurrentWorld.LocationAt(0, -1);
             CurrentPlayer.CompletelyHeal();
         }
 
         private void OnCurrentMonsterKilled(object sender, System.EventArgs eventArgs)
         {
-            RaiseMessage("");
-            RaiseMessage($"You defeated the {CurrentMonster.Name}!");
-            RaiseMessage($"You receive {CurrentMonster.RewardExperiencePoints} experience points.");
-            CurrentPlayer.AddExperience(CurrentMonster.RewardExperiencePoints);
-            RaiseMessage($"You receive {CurrentMonster.Gold} gold.");
-            CurrentPlayer.ReceiveGold(CurrentMonster.Gold);
-            foreach (GameItem gameItem in CurrentMonster.Inventory)
-            {
-                RaiseMessage($"You receive one {gameItem.Name}.");
-                CurrentPlayer.AddItemToInventory(gameItem);
-            }
+            // Get another monster to fight
+            CurrentMonster = CurrentLocation.GetMonster();
         }
 
         private void OnCurrentPlayerLevelUp(object? sender, System.EventArgs e)
         {
-            RaiseMessage($"You are now level {CurrentPlayer.Level}!");
+            _messageBroker.RaiseMessage($"You are now level {CurrentPlayer.Level}!");
         }
 
-        private void OnCurrentPlayerPerformedAction(object sender, string result)
-        {
-            RaiseMessage(result);
-        }
-
-        private void OnCurrentMonsterPerformedAction(object sender, string result)
-        {
-            RaiseMessage(result);
-        }
 
         public void UseCurrentConsumable()
         {
             if (CurrentPlayer.CurrentConsumable != null)
             {
+                if (_currentBattle == null)
+                {
+                    CurrentPlayer.OnActionPerformed += OnConsumableActionPerformed;
+                }
                 CurrentPlayer.UseCurrentConsumable();
+                if (_currentBattle == null)
+                {
+                    CurrentPlayer.OnActionPerformed -= OnConsumableActionPerformed;
+                }
             }
+        }
+        private void OnConsumableActionPerformed(object sender, string result)
+        {
+            _messageBroker.RaiseMessage(result);
         }
     }
 }

@@ -1,20 +1,24 @@
 ﻿using Engine.Factories;
+using Engine.Services;
+using Newtonsoft.Json;
 
 namespace Engine.Models
 {
     public class Location
     {
         public int XCoordinate { get; }
-        public int YCoordinate { get;  }
-
-        public string Name { get;  }
-
-        public string Description { get;  }
-
+        public int YCoordinate { get; }
+        [JsonIgnore]
+        public string Name { get; }
+        [JsonIgnore]
+        public string Description { get; }
+        [JsonIgnore]
         public string ImageName { get; }
-
-        public List<Quest> QuestsAvailableHere { get; }=new List<Quest>();
-        public List<MonsterEncounter> MonstersHere {  get;  } =new List<MonsterEncounter>();
+        [JsonIgnore]
+        public List<Quest> QuestsAvailableHere { get; } = new List<Quest>();
+        [JsonIgnore]
+        public List<MonsterEncounter> MonstersHere { get; } = new List<MonsterEncounter>();
+        [JsonIgnore]
         public Trader TraderHere { get; set; }
         public Location(int xCoordinate, int yCoordinate, string name, string description, string imageName)
         {
@@ -23,12 +27,12 @@ namespace Engine.Models
             Name = name;
             Description = description;
             ImageName = imageName;
-        }    
-        public void AddMonster(int monsterID,int chanceOfEncountering)
+        }
+        public void AddMonster(int monsterID, int chanceOfEncountering)
         {
             if (MonstersHere.Exists(m => m.MonsterID == monsterID))
             {
-                MonstersHere.First(m=>m.MonsterID==monsterID).ChanceOfEncountering = chanceOfEncountering;
+                MonstersHere.First(m => m.MonsterID == monsterID).ChanceOfEncountering = chanceOfEncountering;
             }
             else
             {
@@ -44,7 +48,7 @@ namespace Engine.Models
             // Total the percentages of all monsters at this location.
             int totalChances = MonstersHere.Sum(m => m.ChanceOfEncountering);
             // Select a random number between 1 and the total (in case the total chances is not 100).
-            int randomNumber = RandomNumberGenerator.NumberBetween(1, totalChances);
+            int randomNumber = DiceService.Instance.Roll(totalChances, 1).Value;
             // Loop through the monster list, 
             // adding the monster's percentage chance of appearing to the runningTotal variable.
             // When the random number is lower than the runningTotal,

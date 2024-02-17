@@ -47,9 +47,7 @@ namespace Engine.Factories
                                  itemCategory == GameItem.ItemCategory.Weapon);
                 if (itemCategory == GameItem.ItemCategory.Weapon)
                 {
-                    gameItem.Action = new AttackWithWeapon(gameItem,
-                                        node.AttributeAsInt("MinimumDamage"),
-                                        node.AttributeAsInt("MaximumDamage"));
+                    gameItem.Action = new AttackWithWeapon(gameItem, node.AttributeAsString("DamageDice"));
                 }
                 else if (itemCategory == GameItem.ItemCategory.Consumable)
                 {
