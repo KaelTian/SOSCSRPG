@@ -13,7 +13,7 @@ namespace Engine.Services
 {
     public static class SaveGameService
     {
-        public static void Save(GameSession gameSession,string fileName)
+        public static void Save(GameSession gameSession, string fileName)
         {
             File.WriteAllText(fileName, JsonConvert.SerializeObject(gameSession, Formatting.Indented));
         }
@@ -22,7 +22,7 @@ namespace Engine.Services
         {
             if (!File.Exists(fileName))
             {
-                return new GameSession();
+                return null;
             }
             //load GameSession from cached game file.
             try
@@ -40,33 +40,34 @@ namespace Engine.Services
                 // If there was an error loading/deserializing the saved game, 
                 // create a brand new GameSession object.
                 LoggingService.Log(ex);
-                return new GameSession();
+                throw;
             }
         }
 
         private static Player CreatePlayer(JObject data)
         {
-            string fileVersion = FileVersion(data);
-            Player player;
-            switch (fileVersion)
-            {
-                case "0.1.000":
-                    player =
-                        new Player((string)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Name)],
-                                   (string)data[nameof(GameSession.CurrentPlayer)][nameof(Player.CharacterClass)],
-                                   (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.ExperiencePoints)],
-                                   (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.MaximumHitPoints)],
-                                   (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.CurrentHitPoints)],
-                                   (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Dexterity)],
-                                   (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Gold)]);
-                    break;
-                default:
-                    throw new InvalidDataException($"File version '{fileVersion}' not recognized");
-            }
-            PopulatePlayerInventory(data, player);
-            PopulatePlayerQuests(data, player);
-            PopulatePlayerRecipes(data, player);
-            return player;
+            //string fileVersion = FileVersion(data);
+            //Player player;
+            //switch (fileVersion)
+            //{
+            //    case "0.1.000":
+            //        player =
+            //            new Player((string)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Name)],
+            //                       (string)data[nameof(GameSession.CurrentPlayer)][nameof(Player.CharacterClass)],
+            //                       (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.ExperiencePoints)],
+            //                       (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.MaximumHitPoints)],
+            //                       (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.CurrentHitPoints)],
+            //                       (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Dexterity)],
+            //                       (int)data[nameof(GameSession.CurrentPlayer)][nameof(Player.Gold)]);
+            //        break;
+            //    default:
+            //        throw new InvalidDataException($"File version '{fileVersion}' not recognized");
+            //}
+            //PopulatePlayerInventory(data, player);
+            //PopulatePlayerQuests(data, player);
+            //PopulatePlayerRecipes(data, player);
+            //return player;
+            return null;
         }
         private static void PopulatePlayerInventory(JObject data, Player player)
         {
@@ -126,6 +127,6 @@ namespace Engine.Services
             }
         }
 
-        private static string FileVersion(JObject data) => (string)data[nameof(GameSession.Version)];
+        private static string FileVersion(JObject data) => (string)data[nameof(GameSession.GameDetails.Version)];
     }
 }

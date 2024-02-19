@@ -7,6 +7,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="GameData\GameDetails.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="GameData\GameDetails.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <PackageReference Include="D20Tek.Common.Net47" Version="3.3.5" />
 	  <PackageReference Include="D20Tek.DiceNotation.Net47" Version="3.3.2" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
