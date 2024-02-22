@@ -7,13 +7,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="GameData\GameDetails.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="GameData\GameDetails.json">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+	  <Compile Remove="GameData\**" />
+	  <EmbeddedResource Remove="GameData\**" />
+	  <None Remove="GameData\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -23,24 +19,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="GameData\GameItems.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="GameData\Locations.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="GameData\Monsters.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="GameData\Quests.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="GameData\Recipes.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="GameData\Traders.xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	  <None Update="Images\Locations\FarmFields.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
