@@ -1,10 +1,11 @@
 ﻿using Engine.Services;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Engine.Models
 {
-    public abstract class LivingEntity : BaseNotificationClass
+    public abstract class LivingEntity : INotifyPropertyChanged
     {
         #region Properties
         private string _name;
@@ -23,7 +24,6 @@ namespace Engine.Models
             private set
             {
                 _name = value;
-                OnPropertyChanged();
             }
         }
         public int CurrentHitPoints
@@ -32,7 +32,6 @@ namespace Engine.Models
             private set
             {
                 _currentHitPoints = value;
-                OnPropertyChanged();
             }
         }
         public int MaximumHitPoints
@@ -41,7 +40,6 @@ namespace Engine.Models
             protected set
             {
                 _maximumHitPoints = value;
-                OnPropertyChanged();
             }
         }
         public int Gold
@@ -50,7 +48,6 @@ namespace Engine.Models
             private set
             {
                 _gold = value;
-                OnPropertyChanged();
             }
         }
 
@@ -60,7 +57,6 @@ namespace Engine.Models
             protected set
             {
                 _level = value;
-                OnPropertyChanged();
             }
         }
         public Inventory Inventory
@@ -69,7 +65,6 @@ namespace Engine.Models
             private set
             {
                 _inventory = value;
-                OnPropertyChanged();
             }
         }
         public GameItem CurrentWeapon
@@ -86,7 +81,6 @@ namespace Engine.Models
                 {
                     _currentWeapon.Action.OnActionPerformed += RaiseActionPerformedEvent;
                 }
-                OnPropertyChanged();
             }
         }
         public GameItem CurrentConsumable
@@ -103,7 +97,6 @@ namespace Engine.Models
                 {
                     _currentConsumable.Action.OnActionPerformed += RaiseActionPerformedEvent;
                 }
-                OnPropertyChanged();
             }
         }
         [JsonIgnore]
@@ -113,6 +106,8 @@ namespace Engine.Models
         #endregion
         public event EventHandler<string> OnActionPerformed;
         public event EventHandler OnKilled;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         protected LivingEntity(string name, int maximumHitPoints, int currentHitPoints, IEnumerable<PlayerAttribute> attributes, int gold,
             int level = 1)
         {

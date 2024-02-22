@@ -1,16 +1,20 @@
-﻿namespace Engine.Models
+﻿using System.ComponentModel;
+
+namespace Engine.Models
 {
-    public class GroupedInventoryItem:BaseNotificationClass
+    public class GroupedInventoryItem: INotifyPropertyChanged
     {
         private GameItem _item;
         private int _quantity;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public GameItem Item
         {
             get { return _item;  }
             set
             {
                 _item = value;
-                OnPropertyChanged();
             }
         }
         public int Quantity
@@ -19,7 +23,6 @@
             set
             {
                 _quantity = value;
-                OnPropertyChanged();
             }
         }
         public GroupedInventoryItem(GameItem item,int quantity)

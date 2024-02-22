@@ -2,10 +2,11 @@
 using Engine.Models;
 using Engine.Services;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace Engine.ViewModels
 {
-    public class GameSession : BaseNotificationClass
+    public class GameSession : INotifyPropertyChanged
     {
         private readonly MessageBroker _messageBroker = MessageBroker.GetInstance();
         private Battle _currentBattle;
@@ -15,6 +16,9 @@ namespace Engine.ViewModels
         private Location _currentLocation;
         private Monster _currentMonster;
         private Trader _currentTrader;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         [JsonIgnore]
         public GameDetails GameDetails
         {
@@ -22,7 +26,6 @@ namespace Engine.ViewModels
             set
             {
                 _gameDetails = value;
-                OnPropertyChanged();
             }
         }
         public string Version { get; } = "0.1.000";
@@ -51,11 +54,6 @@ namespace Engine.ViewModels
             set
             {
                 _currentLocation = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasLocationToNorth));
-                OnPropertyChanged(nameof(HasLocationToEast));
-                OnPropertyChanged(nameof(HasLocationToSouth));
-                OnPropertyChanged(nameof(HasLocationToWest));
                 CompleteQuestsAtLocation();
                 GivePlayerQuestsAtLocation();
                 CurrentMonster = CurrentLocation.GetMonster();
@@ -69,9 +67,6 @@ namespace Engine.ViewModels
             set
             {
                 _currentTrader = value;
-
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasTrader));
             }
         }
         [JsonIgnore]
@@ -102,8 +97,6 @@ namespace Engine.ViewModels
                     _currentBattle = new Battle(CurrentPlayer, CurrentMonster);
                     _currentBattle.OnCombatVictory += OnCurrentMonsterKilled;
                 }
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasMonster));
             }
         }
         [JsonIgnore]
