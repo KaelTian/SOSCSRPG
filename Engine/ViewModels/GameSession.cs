@@ -11,22 +11,16 @@ namespace Engine.ViewModels
         private readonly MessageBroker _messageBroker = MessageBroker.GetInstance();
         private Battle _currentBattle;
         #region Properties
-        private GameDetails _gameDetails;
         private Player _currentPlayer;
         private Location _currentLocation;
         private Monster _currentMonster;
-        private Trader _currentTrader;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
         [JsonIgnore]
         public GameDetails GameDetails
         {
-            get => _gameDetails;
-            set
-            {
-                _gameDetails = value;
-            }
+            get; private set;
         }
         public string Version { get; } = "0.1.000";
         public Player CurrentPlayer
@@ -63,11 +57,7 @@ namespace Engine.ViewModels
         [JsonIgnore]
         public Trader CurrentTrader
         {
-            get { return _currentTrader; }
-            set
-            {
-                _currentTrader = value;
-            }
+            get; private set;
         }
         [JsonIgnore]
         public bool HasLocationToNorth => MoveNorthOnStep() != null;

@@ -8,64 +8,34 @@ namespace Engine.Models
     public abstract class LivingEntity : INotifyPropertyChanged
     {
         #region Properties
-        private string _name;
-        private int _currentHitPoints;
-        private int _maximumHitPoints;
-        private int _gold;
-        private int _level;
         private GameItem _currentWeapon;
         private GameItem _currentConsumable;
-        private Inventory _inventory;
         public ObservableCollection<PlayerAttribute> Attributes { get; } =
             new ObservableCollection<PlayerAttribute>();
         public string Name
         {
-            get => _name;
-            private set
-            {
-                _name = value;
-            }
+            get;
         }
         public int CurrentHitPoints
         {
-            get => _currentHitPoints;
-            private set
-            {
-                _currentHitPoints = value;
-            }
+            get; private set;
         }
         public int MaximumHitPoints
         {
-            get => _maximumHitPoints;
-            protected set
-            {
-                _maximumHitPoints = value;
-            }
+            get; protected set;
         }
         public int Gold
         {
-            get => _gold;
-            private set
-            {
-                _gold = value;
-            }
+            get; private set;
         }
 
         public int Level
         {
-            get => _level;
-            protected set
-            {
-                _level = value;
-            }
+            get; protected set;
         }
         public Inventory Inventory
         {
-            get => _inventory;
-            private set
-            {
-                _inventory = value;
-            }
+            get; private set;
         }
         public GameItem CurrentWeapon
         {
