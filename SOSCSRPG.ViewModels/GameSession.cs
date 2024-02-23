@@ -60,6 +60,7 @@ namespace SOSCSRPG.ViewModels
         {
             get; private set;
         }
+        public PopupDetails InventoryDetails { get; set; }
         [JsonIgnore]
         public bool HasLocationToNorth => MoveNorthOnStep() != null;
         [JsonIgnore]
