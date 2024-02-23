@@ -1,8 +1,8 @@
-﻿using Engine.Actions;
-using Engine.Factories;
-using Engine.Models;
+﻿using SOSCSRPG.Models.Actions;
+using SOSCSRPG.Services.Factories;
+using SOSCSRPG.Models;
 
-namespace TestEngine.Actions
+namespace TestSOSCSRPG.Models.Actions
 {
     [TestClass]
     public class TestWithWeapon

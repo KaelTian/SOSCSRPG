@@ -1,4 +1,4 @@
-﻿using SOSCSRPG.Services;
+﻿using SOSCSRPG.Core;
 using System.Windows;
 
 namespace WPFUI

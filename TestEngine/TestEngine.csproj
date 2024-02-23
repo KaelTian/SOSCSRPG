@@ -17,11 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Engine\Engine.csproj" />
+    <Folder Include="TestFiles\SavedGames\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="TestFiles\SavedGames\" />
+    <ProjectReference Include="..\SOSCSRPG.Models\SOSCSRPG.Models.csproj" />
+    <ProjectReference Include="..\SOSCSRPG.Services\SOSCSRPG.Services.csproj" />
   </ItemGroup>
 
 </Project>

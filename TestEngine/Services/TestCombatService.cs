@@ -1,7 +1,4 @@
-﻿using Engine.Models;
-using Engine.Services;
-
-namespace TestEngine.Services
+﻿namespace TestSOSCSRPG.Services
 {
     [TestClass]
     public class TestCombatService
