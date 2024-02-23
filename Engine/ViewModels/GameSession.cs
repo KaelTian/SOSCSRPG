@@ -50,7 +50,7 @@ namespace Engine.ViewModels
                 _currentLocation = value;
                 CompleteQuestsAtLocation();
                 GivePlayerQuestsAtLocation();
-                CurrentMonster = CurrentLocation.GetMonster();
+                CurrentMonster = MonsterFactory.GetMonsterFromLocation(CurrentLocation);
                 CurrentTrader = CurrentLocation.TraderHere;
             }
         }
@@ -198,7 +198,7 @@ namespace Engine.ViewModels
                 _messageBroker.RaiseMessage("You do not have the required ingredients:");
                 foreach (ItemQuantity itemQuantity in recipe.Ingredients)
                 {
-                    _messageBroker.RaiseMessage($"  {itemQuantity.Quantity} {ItemFactory.ItemName(itemQuantity.ItemID)}");
+                    _messageBroker.RaiseMessage(itemQuantity.QuantityItemDescription);
                 }
             }
         }
@@ -247,7 +247,7 @@ namespace Engine.ViewModels
         private void OnCurrentMonsterKilled(object sender, System.EventArgs eventArgs)
         {
             // Get another monster to fight
-            CurrentMonster = CurrentLocation.GetMonster();
+            CurrentMonster = MonsterFactory.GetMonsterFromLocation(CurrentLocation);
         }
 
         private void OnCurrentPlayerLevelUp(object? sender, System.EventArgs e)

@@ -1,4 +1,4 @@
-﻿using Engine.Services;
+﻿using SOSCSRPG.Core;
 using System.ComponentModel;
 
 namespace Engine.Models

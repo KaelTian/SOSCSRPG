@@ -24,6 +24,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\SOSCSRPG.Core\SOSCSRPG.Core.csproj" />
+	  <ProjectReference Include="..\SOSCSRPG.Models\SOSCSRPG.Models.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Update="Images\Locations\FarmFields.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

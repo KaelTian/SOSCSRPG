@@ -1,4 +1,4 @@
-﻿using Engine.EventArgs;
+﻿using SOSCSRPG.Models.EventArgs;
 using Engine.Services;
 
 namespace Engine.Models
@@ -13,6 +13,7 @@ namespace Engine.Models
         {
             _player = player;
             _opponent = opponent;
+            _player.OnActionPerformed += OnCombatantActionPerformed;
             _player.OnActionPerformed += OnCombatantActionPerformed;
             _opponent.OnActionPerformed += OnCombatantActionPerformed;
             _opponent.OnKilled += OnOpponentKilled;

@@ -1,8 +1,8 @@
-﻿using Engine.EventArgs;
-using Engine.Models;
+﻿using Engine.Models;
 using Engine.Services;
 using Engine.ViewModels;
 using Microsoft.Win32;
+using SOSCSRPG.Models.EventArgs;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -168,7 +168,9 @@ namespace WPFUI
             };
             if (saveFileDialog.ShowDialog() == true)
             {
-                SaveGameService.Save(_gameSession, saveFileDialog.FileName);
+                SaveGameService.Save(
+                    new GameState(_gameSession.CurrentPlayer, _gameSession.CurrentLocation.XCoordinate, _gameSession.CurrentLocation.YCoordinate),
+                    saveFileDialog.FileName);
             }
         }
     }

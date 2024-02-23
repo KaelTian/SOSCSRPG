@@ -4,14 +4,15 @@ namespace Engine.Models
 {
     public class ItemQuantity
     {
-        public int ItemID { get; }
+        private readonly GameItem _gameItem;
+        public int ItemID => _gameItem.ItemTypeID;
         public int Quantity { get; }
 
         public string QuantityItemDescription =>
-            $"{Quantity} {ItemFactory.ItemName(ItemID)}";
-        public ItemQuantity(int itemID, int quantity)
+            $"{Quantity} {_gameItem.Name}";
+        public ItemQuantity(GameItem item, int quantity)
         {
-            ItemID = itemID;
+            _gameItem = item;
             Quantity = quantity;
         }
     }

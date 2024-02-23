@@ -3,7 +3,7 @@ using Engine.Models;
 using Engine.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-namespace Engine.ViewModels
+namespace SOSCSRPG.ViewModels
 {
     public class CharacterCreationViewModel : INotifyPropertyChanged
     {

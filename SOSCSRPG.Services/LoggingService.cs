@@ -1,4 +1,4 @@
-﻿namespace Engine.Services
+﻿namespace SOSCSRPG.Services
 {
     public static class LoggingService
     {
