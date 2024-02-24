@@ -4,10 +4,11 @@ using SOSCSRPG.Services;
 using Newtonsoft.Json;
 using SOSCSRPG.Core;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace SOSCSRPG.ViewModels
 {
-    public class GameSession : INotifyPropertyChanged
+    public class GameSession : INotifyPropertyChanged, IDisposable
     {
         private readonly MessageBroker _messageBroker = MessageBroker.GetInstance();
         private Battle _currentBattle;
@@ -60,7 +61,14 @@ namespace SOSCSRPG.ViewModels
         {
             get; private set;
         }
+        [JsonIgnore]
+        public ObservableCollection<string> GameMessages { get; } =
+            new ObservableCollection<string>();
+        public PopupDetails PlayerDetails { get; set; }
         public PopupDetails InventoryDetails { get; set; }
+        public PopupDetails QuestDetails { get; set; }
+        public PopupDetails RecipesDetails { get; set; }
+        public PopupDetails GameMessagesDetails { get; set; }
         [JsonIgnore]
         public bool HasLocationToNorth => MoveNorthOnStep() != null;
         [JsonIgnore]
@@ -102,6 +110,58 @@ namespace SOSCSRPG.ViewModels
             CurrentWorld = WorldFactory.CreateWorld();
             CurrentPlayer = player;
             CurrentLocation = CurrentWorld.LocationAt(xCoordinate, yCoordinate);
+            // Setup popup window properties
+            PlayerDetails = new PopupDetails
+            {
+                IsVisible = false,
+                Top = 10,
+                Left = 10,
+                MinHeight = 75,
+                MaxHeight = 400,
+                MinWidth = 265,
+                MaxWidth = 400
+            };
+            InventoryDetails = new PopupDetails
+            {
+                IsVisible = false,
+                Top = 500,
+                Left = 10,
+                MinHeight = 75,
+                MaxHeight = 175,
+                MinWidth = 250,
+                MaxWidth = 400
+            };
+            QuestDetails = new PopupDetails
+            {
+                IsVisible = false,
+                Top = 500,
+                Left = 275,
+                MinHeight = 75,
+                MaxHeight = 175,
+                MinWidth = 250,
+                MaxWidth = 400
+            };
+            RecipesDetails = new PopupDetails
+            {
+                IsVisible = false,
+                Top = 500,
+                Left = 575,
+                MinHeight = 75,
+                MaxHeight = 175,
+                MinWidth = 250,
+                MaxWidth = 400
+            };
+            GameMessagesDetails = new PopupDetails
+            {
+                IsVisible = false,
+                Top = 250,
+                Left = 10,
+                MinHeight = 75,
+                MaxHeight = 175,
+                MinWidth = 350,
+                MaxWidth = 400
+            };
+            _messageBroker.OnMessageRaised += OnGameMessageRaised;
         }
 
         public void MoveNorth()
@@ -276,6 +336,21 @@ namespace SOSCSRPG.ViewModels
         private void OnConsumableActionPerformed(object sender, string result)
         {
             _messageBroker.RaiseMessage(result);
+        }
+
+        private void OnGameMessageRaised(object sender, GameMessageEventArgs e)
+        {
+            if (GameMessages.Count > 250)
+            {
+                GameMessages.RemoveAt(0);
+            }
+            GameMessages.Add(e.Message);
+        }
+
+        public void Dispose()
+        {
+            _currentBattle?.Dispose();
+            _messageBroker.OnMessageRaised -= OnGameMessageRaised;
         }
     }
 }

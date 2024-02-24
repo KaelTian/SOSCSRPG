@@ -71,6 +71,8 @@ namespace SOSCSRPG.Models
         [JsonIgnore]
         public bool IsAlive => CurrentHitPoints > 0;
         [JsonIgnore]
+        public string HitPoints => $"{CurrentHitPoints}/{MaximumHitPoints}";
+        [JsonIgnore]
         public bool IsDead => !IsAlive;
         #endregion
         public event EventHandler<string> OnActionPerformed;
